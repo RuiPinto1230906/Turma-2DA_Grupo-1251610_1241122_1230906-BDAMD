@@ -25,12 +25,18 @@
 USE master;
 GO
 
+IF DB_ID('TripISEP') IS NOT NULL
+BEGIN
+    ALTER DATABASE TripISEP SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE TripISEP;
+END;
+GO
+
 CREATE DATABASE TripISEP;
 GO
 
 USE TripISEP;
 GO
-
 /* =====================================================================
    1. TABELAS
    ===================================================================== */
