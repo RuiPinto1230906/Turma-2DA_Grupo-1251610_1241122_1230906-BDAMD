@@ -1,3 +1,6 @@
+USE TripISEP;
+GO
+
 SELECT c.nr_idCivil, c.nome,
        COUNT(v.nr_viagem)  AS nr_viagens,
        SUM(v.custo_total)  AS total_gasto
