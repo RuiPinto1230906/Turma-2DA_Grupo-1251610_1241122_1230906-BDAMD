@@ -16,13 +16,6 @@ ViagensCompletasCondutor AS (
     CROSS JOIN TotalPontos tp
     GROUP BY c.nr_idCivil, c.nome, v.nr_viagem, tp.qtd_total
     HAVING COUNT(DISTINCT vpt.cod_ponto) = tp.qtd_total
-),
-CondutoresHorasConsistentes AS (
-    SELECT vcc.nr_idCivil
-    FROM ViagensCompletasCondutor vcc
-    JOIN Viagem_Ponto_Turistico vpt ON vpt.nr_viagem = vcc.nr_viagem
-    GROUP BY vcc.nr_idCivil, vpt.cod_ponto
-    HAVING MIN(CAST(vpt.data_hora_passagem AS TIME)) = MAX(CAST(vpt.data_hora_passagem AS TIME))
 )
 SELECT DISTINCT vcc.nr_idCivil,
                 vcc.nome,
@@ -35,6 +28,9 @@ WHERE NOT EXISTS (
     WHERE vc2.nr_idCivil = vcc.nr_idCivil
     GROUP BY vc2.nr_idCivil, vpt2.cod_ponto
     HAVING MIN(CAST(vpt2.data_hora_passagem AS TIME)) <> MAX(CAST(vpt2.data_hora_passagem AS TIME))
-)
+)  
+AND (SELECT COUNT(*)
+       FROM ViagensCompletasCondutor vc3
+       WHERE vc3.nr_idCivil = vcc.nr_idCivil) >= 2
 ORDER BY vcc.nome, vcc.nr_viagem;
 GO

@@ -1,0 +1,189 @@
+@startuml TripISEP_Modelo_Relacional
+hide circle
+hide methods
+hide empty members
+
+skinparam nodesep 90
+skinparam ranksep 90
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam defaultFontSize 12
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #333333
+skinparam class {
+  BackgroundColor #F4B87C
+  BorderColor #333333
+  ArrowColor #555555
+  AttributeFontSize 11
+}
+skinparam legend {
+  BackgroundColor #FFF8EE
+  BorderColor #999999
+}
+
+' ===================== ENTIDADES =====================
+entity "Cliente" as Cliente {
+  * nr_idCivil : <<PK>>
+  --
+  * nome
+  * nif : <<UNIQUE>>
+  * data_nascimento
+  * login : <<UNIQUE>>
+  * password
+}
+
+entity "Tipo_Servico" as Tipo_Servico {
+  * cod_servico : <<PK>>
+  --
+  * descricao
+}
+
+entity "Historico_Custo_Servico" as Historico_Custo_Servico {
+  * cod_servico : <<PK, FK>>
+  * data_inicio_custo : <<PK>>
+  --
+  data_fim_custo
+  * preco_base
+  * custo_minuto
+  * custo_km
+  * taxa_iva
+  * tempo_max_espera
+  * custo_minuto_espera
+  * custo_cancelamento
+  * perc_acrescimo_cancelamento
+  * perc_comissao_condutor
+  * perc_comissao_supervisor
+}
+
+entity "Pedido_Viagem" as Pedido_Viagem {
+  * cod_pedido : <<PK>>
+  --
+  * nr_idCivil_cliente : <<FK>>
+  * cod_servico : <<FK>>
+  * matricula : <<FK>>
+  * nr_idCivil_condutor : <<FK>>
+  * data_hora_pedido
+  * data_hora_recolha_passageiro
+  * local_inicio
+  * distancia_km
+  * data_hora_cancelamento
+  * valor_cancelamento
+}
+
+entity "Viagem" as Viagem {
+  * nr_viagem : <<PK>>
+  --
+  * cod_pedido : <<FK, UNIQUE>>
+  * duracao_minutos
+  * atraso_passageiro_minutos
+  * custo_preco_base
+  * custo_duracao
+  * custo_distancia
+  * custo_espera
+  * valor_iva
+  * custo_total
+}
+
+entity "Condutor" as Condutor {
+  * nr_idCivil : <<PK>>
+  --
+  * nome
+  * morada
+  * nif : <<UNIQUE>>
+  * data_nascimento
+  * nr_carta_conducao : <<UNIQUE>>
+  * data_emissao_carta
+  * data_validade_carta
+  * nr_idCivil_supervisor : <<FK>>
+}
+
+entity "Veiculo" as Veiculo {
+  * matricula : <<PK>>
+  --
+  * marca
+  * modelo
+  * nr_chassis : <<UNIQUE>>
+  * data_matricula
+  * limite_km_semanal
+}
+
+entity "Viagem_Ponto_Turistico" as Viagem_Ponto_Turistico {
+  * nr_viagem : <<PK, FK>>
+  * cod_ponto : <<PK, FK>>
+  * data_hora_passagem : <<PK>>
+}
+
+entity "Fatura_Recibo" as Fatura_Recibo {
+  * nr_fatura : <<PK>>
+  --
+  * nr_viagem : <<FK, UNIQUE>>
+  * data_emissao
+}
+
+entity "Recibo_Comissao" as Recibo_Comissao {
+  * nr_recibo : <<PK>>
+  --
+  * nr_idCivil_condutor : <<FK>>
+  * data_emissao
+  * mes_referencia
+  * ano_referencia
+  * valor_comissoes_viagens
+  * valor_comissoes_supervisao
+  * valor_total_comissoes
+}
+
+entity "Condutor_Veiculo" as Condutor_Veiculo {
+  * matricula : <<PK, FK>>
+  * data_hora_inicio : <<PK>>
+  --
+  * nr_idCivil_condutor : <<FK>>
+  data_hora_fim
+}
+
+entity "Ponto_Turistico" as Ponto_Turistico {
+  * cod_ponto : <<PK>>
+  --
+  * nome
+  * tipo_ponto_turistico
+}
+
+entity "Detalhe_Recibo_Viagem" as Detalhe_Recibo_Viagem {
+  * nr_viagem : <<PK, FK>>
+  --
+  * nr_recibo : <<FK>>
+  * cod_servico : <<FK>>
+  * custo_total_viagem
+  * percentagem_aplicada
+  * valor_comissao
+}
+
+' ===================== RELAÇÕES =====================
+Tipo_Servico "1" -- "1..*" Historico_Custo_Servico : tem
+Tipo_Servico "1" -- "0..*" Pedido_Viagem : é pedido em
+Cliente "1" -- "0..*" Pedido_Viagem : efetua
+
+Pedido_Viagem "0..*" -- "0..1" Condutor : é alocado a
+Condutor "0..1" -- "0..*" Condutor : supervisiona
+Condutor "1" -- "0..*" Condutor_Veiculo : conduz
+Veiculo "1" -- "0..*" Condutor_Veiculo : é atribuído
+Pedido_Viagem "0..*" -- "0..1" Veiculo : usa
+Pedido_Viagem "1" -- "0..1" Viagem : dá origem a
+
+Condutor "1" -- "0..*" Recibo_Comissao : recebe
+Recibo_Comissao "1" -- "0..*" Detalhe_Recibo_Viagem : contém
+Viagem "1" -- "0..1" Detalhe_Recibo_Viagem : é paga em
+Viagem "1" -- "1" Fatura_Recibo : gera
+Viagem "1" -- "0..*" Viagem_Ponto_Turistico : passa por
+Viagem_Ponto_Turistico "0..*" -- "1" Ponto_Turistico : é visitado em
+Tipo_Servico "1" -- "0..*" Detalhe_Recibo_Viagem : é usado em
+
+legend bottom left
+  <b>Restrições representadas no modelo</b>
+  R1: tipo_ponto_turistico IN ('M','MU','PN','MI')
+  R2: nr_chassis é único
+  R3: nr_carta_conducao é único
+  R4: nr_idCivil_supervisor pode ser NULL
+  R5: data_hora_pedido < data_hora_recolha_passageiro
+  <i>* = atributo obrigatório (NOT NULL)</i>
+endlegend
+@enduml

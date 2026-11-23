@@ -38,6 +38,7 @@ LEFT JOIN TotaisFimSemana tfs ON tfs.nr_idCivil_condutor = ve.nr_idCivil_conduto
 WHERE NOT EXISTS (
     SELECT 1
     FROM Pedido_Viagem p2
+    JOIN Viagem v2 ON v2.cod_pedido = p2.cod_pedido
     WHERE p2.nr_idCivil_condutor = ve.nr_idCivil_condutor
       AND p2.data_hora_recolha_passageiro >= DATEADD(MONTH, -6, GETDATE())
       AND ((DATEPART(weekday, p2.data_hora_recolha_passageiro) + @@DATEFIRST - 2) % 7) + 1 NOT IN (2, 4, 6, 7)

@@ -1,3 +1,6 @@
+USE TripISEP;
+GO
+
 SELECT r.cod_ponto,
        r.nome,
        r.tipo_ponto_turistico,
